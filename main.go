@@ -7,144 +7,133 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Animal struct {
+type AutoPart struct {
 	ID           string    `json:"id"`
-	Type         string    `json:"type"`
+	Category     string    `json:"category"`
 	Name         string    `json:"name"`
-	Location     string    `json:"location"`
-	Age          int       `json:"age"`
-	Gender       string    `json:"gender"`
-	Weight       float64   `json:"weight"`
+	Manufacturer string    `json:"manufacturer"`
+	Stock        int       `json:"stock"`
+	Price        float64   `json:"price"`
 	DateAdded    time.Time `json:"date_added"`
-	HealthStatus string    `json:"health_status"`
 	Description  string    `json:"description"`
 }
 
-var animals = []Animal{
-	{ID: "1", Type: "Обезьяна", Name: "Чичичи", Location: "Вьетнам", Age: 8, Gender: "ж",
-		Weight: 20, DateAdded: time.Now(), HealthStatus: "намана", Description: "Ворует кирпичи"},
-	{ID: "2", Type: "Мадагаскарский яйценосный дрозд", Name: "BigBalls", Location: "Мадагаскар", Age: 4, Gender: "ж",
-		Weight: 0.1, DateAdded: time.Now(), HealthStatus: "намана", Description: `Единственная известная науке птица, 
-	не высиживающая яйца и не вьющая гнезд. После завершения беременности, 
-	самка откладывает в специальную кожаную сумку два, в редких случаях - три яйца, практически идеальной круглой формы.`},
-	{ID: "3", Type: "Собака", Name: "Мухтар", Location: "Россия", Age: 10, Gender: "м",
-		Weight: 10, DateAdded: time.Now(), HealthStatus: "намана", Description: "Снимается в кино"},
-	{ID: "4", Type: "Кирпич", Name: "Кирпич", Location: "Россия", Age: 100, Gender: "-",
-		Weight: 3, DateAdded: time.Now(), HealthStatus: "намана", Description: "Как он сюда попал??"},
-	{ID: "5", Type: "Обезьяна", Name: "Чачача", Location: "Израиль", Age: 8, Gender: "ж",
-		Weight: 20, DateAdded: time.Now(), HealthStatus: "намана", Description: "Не ворует кирпичи"},
+var autoParts = []AutoPart{
+	{ID: "1", Category: "Двигатель", Name: "Масляный фильтр", Manufacturer: "Bosch", Stock: 50, Price: 500.00, DateAdded: time.Now(), Description: "Подходит для большинства легковых автомобилей."},
+	{ID: "2", Category: "Тормоза", Name: "Тормозные колодки", Manufacturer: "Brembo", Stock: 20, Price: 1500.00, DateAdded: time.Now(), Description: "Высококачественные тормозные колодки."},
+	{ID: "3", Category: "Электроника", Name: "Аккумулятор", Manufacturer: "Varta", Stock: 15, Price: 8000.00, DateAdded: time.Now(), Description: "Надежный автомобильный аккумулятор."},
+	{ID: "4", Category: "Подвеска", Name: "Амортизатор", Manufacturer: "KYB", Stock: 10, Price: 4000.00, DateAdded: time.Now(), Description: "Амортизатор для комфортной езды."},
+	{ID: "5", Category: "Освещение", Name: "Фара", Manufacturer: "Philips", Stock: 25, Price: 3000.00, DateAdded: time.Now(), Description: "Светодиодная фара высокого качества."},
 }
 
 func main() {
 	router := gin.Default()
 
-	// Получение списка животных
-	router.GET("/animals", getAnimals)
+	// Получение списка запчастей
+	router.GET("/parts", getAutoParts)
 
-	// Получение животного по его ID
-	router.GET("/animals/:id", getAnimalByID)
+	// Получение запчасти по её ID
+	router.GET("/parts/:id", getAutoPartByID)
 
-	// Создание нового животного
-	router.POST("/animals", createAnimal)
+	// Добавление новой запчасти
+	router.POST("/parts", createAutoPart)
 
-	// Обновление параметров существующего животного
-	router.PUT("/animals/:id", updateAnimal)
+	// Обновление параметров существующей запчасти
+	router.PUT("/parts/:id", updateAutoPart)
 
-	// Удаление животного(
-	router.DELETE("/animals/:id", deleteAnimal)
+	// Удаление запчасти
+	router.DELETE("/parts/:id", deleteAutoPart)
 
-	// Получение количества животных
-	router.GET("/animals/stats", getAnimalStatistics)
+	// Получение количества запчастей
+	router.GET("/parts/stats", getAutoPartStatistics)
 
-	// Получение животного только по типу
-	router.GET("/animals/type", getAnimalsByType)
+	// Получение запчастей по категории
+	router.GET("/parts/category", getAutoPartsByCategory)
 
 	router.Run(":8080")
 }
 
-func getAnimals(c *gin.Context) {
-	c.JSON(http.StatusOK, animals)
+func getAutoParts(c *gin.Context) {
+	c.JSON(http.StatusOK, autoParts)
 }
 
-func getAnimalByID(c *gin.Context) {
+func getAutoPartByID(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, animal := range animals {
-		if animal.ID == id {
-			c.JSON(http.StatusOK, animal)
+	for _, part := range autoParts {
+		if part.ID == id {
+			c.JSON(http.StatusOK, part)
 			return
 		}
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"message": "нет такого животного"})
+	c.JSON(http.StatusNotFound, gin.H{"message": "Запчасть не найдена"})
 }
 
-func createAnimal(c *gin.Context) {
-	var newAnimal Animal
+func createAutoPart(c *gin.Context) {
+	var newPart AutoPart
 
-	if err := c.BindJSON(&newAnimal); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid request"})
+	if err := c.BindJSON(&newPart); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Некорректный запрос"})
 		return
 	}
 
-	animals = append(animals, newAnimal)
-	c.JSON(http.StatusCreated, newAnimal)
+	autoParts = append(autoParts, newPart)
+	c.JSON(http.StatusCreated, newPart)
 }
 
-func updateAnimal(c *gin.Context) {
+func updateAutoPart(c *gin.Context) {
 	id := c.Param("id")
-	var updatedAnimal Animal
+	var updatedPart AutoPart
 
-	if err := c.BindJSON(&updatedAnimal); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid request"})
+	if err := c.BindJSON(&updatedPart); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Некорректный запрос"})
 		return
 	}
 
-	for i, animal := range animals {
-		if animal.ID == id {
-			animals[i] = updatedAnimal
-			c.JSON(http.StatusOK, updatedAnimal)
+	for i, part := range autoParts {
+		if part.ID == id {
+			autoParts[i] = updatedPart
+			c.JSON(http.StatusOK, updatedPart)
 			return
 		}
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"message": "нет такого животного"})
+	c.JSON(http.StatusNotFound, gin.H{"message": "Запчасть не найдена"})
 }
 
-func deleteAnimal(c *gin.Context) {
+func deleteAutoPart(c *gin.Context) {
 	id := c.Param("id")
 
-	for i, animal := range animals {
-		if animal.ID == id {
-			animals = append(animals[:i], animals[i+1:]...)
-			c.JSON(http.StatusOK, gin.H{"message": "животное удалено("})
+	for i, part := range autoParts {
+		if part.ID == id {
+			autoParts = append(autoParts[:i], autoParts[i+1:]...)
+			c.JSON(http.StatusOK, gin.H{"message": "Запчасть удалена"})
 			return
 		}
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"message": "нет такого животного"})
+	c.JSON(http.StatusNotFound, gin.H{"message": "Запчасть не найдена"})
 }
 
-func getAnimalStatistics(c *gin.Context) {
-	totalAnimals := len(animals)
-	c.JSON(http.StatusOK, gin.H{"всего животных": totalAnimals})
-	return
+func getAutoPartStatistics(c *gin.Context) {
+	totalParts := len(autoParts)
+	c.JSON(http.StatusOK, gin.H{"Всего запчастей": totalParts})
 }
 
-func getAnimalsByType(c *gin.Context) {
-	animalType := c.Query("type")
-	var filteredAnimals []Animal
+func getAutoPartsByCategory(c *gin.Context) {
+	category := c.Query("category")
+	var filteredParts []AutoPart
 
-	for _, animal := range animals {
-		if animal.Type == animalType {
-			filteredAnimals = append(filteredAnimals, animal)
+	for _, part := range autoParts {
+		if part.Category == category {
+			filteredParts = append(filteredParts, part)
 		}
 	}
 
-	if len(filteredAnimals) > 0 {
-		c.JSON(http.StatusOK, filteredAnimals)
+	if len(filteredParts) > 0 {
+		c.JSON(http.StatusOK, filteredParts)
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{"message": "животные не найдены"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Запчасти не найдены"})
 	}
-	return
 }
